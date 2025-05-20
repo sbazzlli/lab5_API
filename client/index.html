@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Конвертер валют</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    label, input, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      padding: 0.5rem;
+    }
+    #result {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Конвертер валют</h1>
+
+  <label for="base">Базова валюта:</label>
+  <input type="text" id="base" placeholder="Наприклад, USD">
+
+  <label for="target">Цільова валюта:</label>
+  <input type="text" id="target" placeholder="Наприклад, UAH">
+
+  <button id="convert">Конвертувати</button>
+
+  <p id="result"></p>
+
+  <script>
+    document.getElementById('convert').addEventListener('click', () => {
+      const base = document.getElementById('base').value.trim();
+      const target = document.getElementById('target').value.trim();
+      const resultEl = document.getElementById('result');
+
+      if (!base || !target) {
+        resultEl.textContent = 'Будь ласка, заповніть обидва поля.';
+        return;
+      }
+
+      const url = `https://localhost:7147/api/Currency?_base=${encodeURIComponent(base)}&_target=${encodeURIComponent(target)}`;
+
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP помилка: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.code !== '0') {
+            resultEl.textContent = `Сервер повернув помилку: ${data.msg}`;
+            return;
+          }
+          const rate = data.convert_result.rate;
+          resultEl.textContent = `1 ${base} коштує ${rate} ${target}`;
+        })
+        .catch(err => {
+          resultEl.textContent = `Сталася помилка: ${err.message}`;
+        });
+    });
+  </script>
+</body>
+</html>
